@@ -1,0 +1,24 @@
+# transfer genenames of human's to rat's
+library(biomaRt)
+ensembl <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
+ensembl_rat <- useMart("ensembl", dataset="mmusculus_gene_ensembl")
+
+mar_2 <- readxl::read_xls("C:/Users/Minos/Desktop/junyi.xls",col_names = T)
+mar_2$rat <- NULL
+for (i in c(1:nrow(mar_2))) {
+  human_genes <- strsplit(as.character(mar_2[i,2]),",")
+  rat_genes <- getBM(attributes = c("external_gene_name", "ensembl_gene_id"), 
+                     filters = "external_gene_name", 
+                     values = human_genes, 
+                     mart = ensembl_rat)
+  mar_2$rat[i] <- paste(rat_genes$external_gene_name,collapse = ",")
+}
+
+n=nrow(mar_2)
+for (i in c(1:n)) {
+  if (mar_2[i,2] == "") {
+    mar_2 <- mar_2[-i,]
+  }
+}
+
+write.csv(mar_2,"junyi.csv",row.names = F)
